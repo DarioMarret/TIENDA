@@ -1,8 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable prettier/prettier */
-/* eslint-disable eqeqeq */
-/* eslint-disable react/jsx-no-useless-fragment */
-/* eslint-disable no-unused-vars */
 import { useState, useEffect, useMemo } from "react";
 
 // react-router components
