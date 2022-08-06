@@ -14,16 +14,17 @@ import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 // @mui icons
 import Icon from "@mui/material/Icon";
 import Pagar from "layouts/pagar/pagar";
+import Creditod from "layouts/historial";
 
 const routes = [
-  {
-    type: "collapse",
-    name: "Inicio",
-    key: "inicio",
-    icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/dashboard",
-    component: <Dashboard />,
-  },
+  // {
+  //   type: "collapse",
+  //   name: "Inicio",
+  //   key: "inicio",
+  //   icon: <Icon fontSize="small">dashboard</Icon>,
+  //   route: "/dashboard",
+  //   component: <Dashboard />,
+  // },
   {
     type: "collapse",
     name: "Pagar",
@@ -46,16 +47,16 @@ const routes = [
     key: "credito",
     icon: <HistoryEduIcon />,
     route: "/creditos",
-    component: <Tables />,
+    component: <Creditod />,
   },
-  {
-    type: "collapse",
-    name: "reset contraceña",
-    key: "reset",
-    icon: <LockResetIcon />,
-    route: "/reset",
-    component: <Tables />,
-  },
+  // {
+  //   type: "collapse",
+  //   name: "reset contraceña",
+  //   key: "reset",
+  //   icon: <LockResetIcon />,
+  //   route: "/reset",
+  //   component: <Tables />,
+  // },
   // {
   //   type: "collapse",
   //   name: "Tables",

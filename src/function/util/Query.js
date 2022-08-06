@@ -260,3 +260,33 @@ export const Loginn = async (datos) => {
         console.warn(error);
     }
 }
+
+export const ListarTransaccionesTienda = async (id) => {
+    try {
+        const { data } = await axios.get(`${url}/api/transacciones/${id}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic YWRtaW46YWRtaW4=`
+                }
+            });
+        return data.success ? data.data : false
+    } catch (error) {
+        console.warn(error);
+    }
+}
+
+export const ListarHistorialTienda = async (id) => {
+    try {
+        const { data } = await axios.get(`${url}/api/historialcredito/${id}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic YWRtaW46YWRtaW4=`
+                }
+            });
+        return data.success ? data.data : false
+    } catch (error) {
+        console.warn(error);
+    }
+}

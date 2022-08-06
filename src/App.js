@@ -6,15 +6,11 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 // @mui material components
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Icon from "@mui/material/Icon";
 
 // Material Dashboard 2 React components
-import MDBox from "components/MDBox";
 
 // Material Dashboard 2 React example components
 import Sidenav from "examples/Sidenav";
-import Configurator from "examples/Configurator";
-
 // Material Dashboard 2 React themes
 import theme from "assets/theme";
 import themeRTL from "assets/theme/theme-rtl";
@@ -35,11 +31,9 @@ import routes from "routes";
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 
 // Images
-import brandWhite from "assets/images/logo-ct.png";
-import brandDark from "assets/images/logo-ct-dark.png";
 import Basic from "layouts/authentication/sign-in";
 import AuthContext from "./context/AuthContext";
-import { getDatosUsuario, removeDatosUsuario, setDatosUsuario } from "./function/localstore/storeUsuario";
+import { dataCliente, getDatosUsuario, removeDatosUsuario, setDatosUsuario } from "./function/localstore/storeUsuario";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -62,9 +56,9 @@ export default function App() {
 
   useEffect(() => {
     (() => {
-      const dataCliente = getDatosUsuario();
-      if (dataCliente != null) {
-        setAuth(dataCliente);
+      const dataC= getDatosUsuario();
+      if (dataC != null) {
+        setAuth(dataC);
       } else {
         setAuth(null);
       }
@@ -146,6 +140,7 @@ export default function App() {
     [auth]
   );
 
+
   return direction === "rtl" ? (
     <CacheProvider value={rtlCache}>
       <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
@@ -158,8 +153,8 @@ export default function App() {
                 <>
                   <Sidenav
                     color={sidenavColor}
-                    brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-                    brandName="Material Dashboard 2"
+                    // brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
+                    brandName={dataCliente().responsable}
                     routes={routes}
                     onMouseEnter={handleOnMouseEnter}
                     onMouseLeave={handleOnMouseLeave}
@@ -168,7 +163,8 @@ export default function App() {
               )}
               <Routes>
                 {getRoutes(routes)}
-                <Route path="*" element={<Navigate to="/dashboard" />} />
+                {/* <Route path="*" element={<Navigate to="/dashboard" />} /> */}
+                <Route path="*" element={<Navigate to="/pagar" />} />
               </Routes>
             </>
           }
@@ -186,8 +182,8 @@ export default function App() {
               <>
                 <Sidenav
                   color={sidenavColor}
-                  brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-                  brandName="Material Dashboard 2"
+                  // brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
+                  brandName={dataCliente().responsable}
                   routes={routes}
                   onMouseEnter={handleOnMouseEnter}
                   onMouseLeave={handleOnMouseLeave}
@@ -196,7 +192,9 @@ export default function App() {
             )}
             <Routes>
               {getRoutes(routes)}
-              <Route path="*" element={<Navigate to="/dashboard" />} />
+              {/* <Route path="*" element={<Navigate to="/dashboard" />} /> */}
+              <Route path="*" element={<Navigate to="/pagar" />} />
+
             </Routes>
           </>
         }

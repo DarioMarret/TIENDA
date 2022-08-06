@@ -1,4 +1,4 @@
-import { usuario_local } from "../util/global";
+import { dataClientes, usuario_local } from "../util/global";
 import jwt_decode from "jwt-decode";
 
 export function setDatosUsuario(data) {
@@ -28,11 +28,26 @@ export function removeDatosUsuario() {
     }
 }
 
-export const dataCliente = () =>{
+export const dataCliente = () => {
     let user = getDatosUsuario();
-    if(user){
+    if (user) {
         return jwt_decode(user);
-    }else{
+    } else {
         return null;
+    }
+}
+
+export const dataClienteId = (idfactura) => {
+    if (idfactura != null) {
+        var items;
+        const parse = JSON.parse(localStorage.getItem(dataClientes))
+        parse.map(item => {
+            if (item != null) {
+                if (item.idfactura == idfactura) {
+                    items = item;
+                }
+            }
+        })
+        return items
     }
 }
