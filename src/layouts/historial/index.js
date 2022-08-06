@@ -12,6 +12,7 @@ import DataTable from "examples/Tables/DataTable";
 import React, { useEffect, useState } from "react";
 import { dataCliente } from "function/localstore/storeUsuario";
 import { ListarHistorialTienda } from "function/util/Query";
+import { SaldoActual } from "function/util/Query";
 
 // Data
 
@@ -36,7 +37,7 @@ function Creditod() {
   useEffect(() => {
     (async () => {
       setuserTienda(await ListarHistorialTienda(dataCliente().id));
-      setsaldo(await ListarHistorialTienda(dataCliente().id));
+      setsaldo(await SaldoActual(dataCliente().id));
     })()
   }, []);
   return (
