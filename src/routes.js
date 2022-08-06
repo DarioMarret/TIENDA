@@ -17,14 +17,14 @@ import Pagar from "layouts/pagar/pagar";
 import Creditod from "layouts/historial";
 
 const routes = [
-  // {
-  //   type: "collapse",
-  //   name: "Inicio",
-  //   key: "inicio",
-  //   icon: <Icon fontSize="small">dashboard</Icon>,
-  //   route: "/dashboard",
-  //   component: <Dashboard />,
-  // },
+  {
+    type: "collapse",
+    name: "Inicio",
+    key: "inicio",
+    icon: <Icon fontSize="small">dashboard</Icon>,
+    route: "/dashboard",
+    component: <Dashboard />,
+  },
   {
     type: "collapse",
     name: "Pagar",

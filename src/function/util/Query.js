@@ -305,3 +305,33 @@ export const SaldoActual = async (id) => {
         console.warn(error);
     }
 }
+
+export const TotalCard = async (id) => {
+    try {
+        const { data } = await axios.get(`${url}/api/totalcard/${id}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic YWRtaW46YWRtaW4=`
+                }
+            });
+        return data.success ? data.data : false
+    } catch (error) {
+        console.warn(error);
+    }
+}
+
+export const UlmiasTransaciones = async (id) => {
+    try {
+        const { data } = await axios.get(`${url}/api/ultimastransaciones/${id}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic YWRtaW46YWRtaW4=`
+                }
+            });
+        return data.success ? data.data : false
+    } catch (error) {
+        console.warn(error);
+    }
+}

@@ -26,13 +26,14 @@ function Tables() {
       { Header: "Transaccion", accessor: "transacion_id", width: "10%" },
       { Header: "Cantidad", accessor: "cantidad", width: "5%" },
       { Header: "Recaudacion", accessor: "recaudacion", width: "5%" },
-      { Header: "Cedula Cliente", accessor: "cedula", width0: "10%" },
+      { Header: "Cedula Cliente", accessor: "cedula", width: "10%" },
       { Header: "cliente y estado", accessor: "cliente", width: "25%" },
       { Header: "Fecha de pago", accessor: "fecha_registro", width: "20%" },
       { Header: "Accion", accessor: "accion", width: "20%" },
     ],
     rows: userTienda
   }
+  
   if (userTienda != null) {
     userTienda.map((item, index) => {
       console.log(item)
