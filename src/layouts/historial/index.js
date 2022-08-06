@@ -17,6 +17,7 @@ import { ListarHistorialTienda } from "function/util/Query";
 
 function Creditod() {
   const [userTienda, setuserTienda] = useState([]);
+  const [saldo, setsaldo] = useState(0);
   const dataTableData = {//963722798
     columns: [
       { Header: "#", accessor: "key", width: "10%" },
@@ -35,6 +36,7 @@ function Creditod() {
   useEffect(() => {
     (async () => {
       setuserTienda(await ListarHistorialTienda(dataCliente().id));
+      setsaldo(await ListarHistorialTienda(dataCliente().id));
     })()
   }, []);
   return (
@@ -46,7 +48,8 @@ function Creditod() {
             <Card>
               <MDBox p={3} lineHeight={1}>
                 <MDTypography variant="h5" fontWeight="medium">
-                  Transacciones realizadas
+                  Historial de creditos
+                  Saldo Actual: {saldo !== null ? saldo : 0}
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>

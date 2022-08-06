@@ -290,3 +290,18 @@ export const ListarHistorialTienda = async (id) => {
         console.warn(error);
     }
 }
+
+export const SaldoActual = async (id) => {
+    try {
+        const { data } = await axios.get(`${url}/api/saldotiendas/${id}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic YWRtaW46YWRtaW4=`
+                }
+            });
+        return data.success ? data.data[0].saldos : false
+    } catch (error) {
+        console.warn(error);
+    }
+}
