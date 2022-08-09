@@ -163,8 +163,8 @@ export default function App() {
               )}
               <Routes>
                 {getRoutes(routes)}
-                {/* <Route path="*" element={<Navigate to="/dashboard" />} /> */}
-                <Route path="*" element={<Navigate to="/pagar" />} />
+                <Route path="*" element={<Navigate to="/dashboard" />} />
+                {/* <Route path="*" element={<Navigate to="/pagar" />} /> */}
               </Routes>
             </>
           }
@@ -192,8 +192,8 @@ export default function App() {
             )}
             <Routes>
               {getRoutes(routes)}
-              {/* <Route path="*" element={<Navigate to="/dashboard" />} /> */}
-              <Route path="*" element={<Navigate to="/pagar" />} />
+              <Route path="*" element={<Navigate to="/dashboard" />} />
+              {/* <Route path="*" element={<Navigate to="/pagar" />} /> */}
 
             </Routes>
           </>
