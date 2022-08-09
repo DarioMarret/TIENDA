@@ -22,7 +22,7 @@ function Pagar() {
     const [estadoPagar, setEstadoPagar] = useState(false);
     const [bloqueoPagar, setBloqueoPagar] = useState(true);
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, seterror] = useState(null);
 
     const [estadoTransaccion, setEstadoTransaccion] = useState(false);
