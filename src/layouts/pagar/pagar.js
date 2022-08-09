@@ -161,7 +161,7 @@ function Pagar() {
                     "telefono": dataClienteId(selectIdfactura).telefono,
                     "movil": dataClienteId(selectIdfactura).movil,
                 }
-                const { data } = await axios.post('https://rec.netbot.ec/v1/api/pagars', info, {
+                const { data } = await axios.post('https://rec.netbot.ec/v1/api/pagar', info, {
                     headers: {
                         'Authorization': 'Basic YWRtaW46YWRtaW4=',
                         'Content-Type': 'application/json'
