@@ -23,20 +23,23 @@ import {
   navbarContainer,
   navbarRow,
   navbarIconButton,
+  navbarMobileMenu
 } from "examples/Navbars/DashboardNavbar/styles";
 
 // Material Dashboard 2 React context
 import {
   useMaterialUIController,
   setTransparentNavbar,
+  setMiniSidenav,
+  setOpenConfigurator
 } from "context";
-import { Button } from "@mui/material";
+import { Button, Icon, IconButton } from "@mui/material";
 import useAuth from "hook/useAuth";
 
 function DashboardNavbar({ absolute, light, isMini }) {
   const [navbarType, setNavbarType] = useState();
   const [controller, dispatch] = useMaterialUIController();
-  const { transparentNavbar, fixedNavbar,  darkMode } = controller;
+  const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
   const route = useLocation().pathname.split("/").slice(1);
 
   useEffect(() => {
@@ -65,8 +68,22 @@ function DashboardNavbar({ absolute, light, isMini }) {
     return () => window.removeEventListener("scroll", handleTransparentNavbar);
   }, [dispatch, fixedNavbar]);
 
+  const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
 
   const { logout } = useAuth()
+
+    // Styles for the navbar icons
+    const iconsStyle = ({ palette: { dark, white, text }, functions: { rgba } }) => ({
+      color: () => {
+        let colorValue = light || darkMode ? white.main : dark.main;
+  
+        if (transparentNavbar && !light) {
+          colorValue = darkMode ? rgba(text.main, 0.6) : text.main;
+        }
+  
+        return colorValue;
+      },
+    });
 
   return (
     <AppBar
@@ -87,6 +104,17 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 <Button sx={navbarIconButton} size="small" disableRipple onClick={logout}>
                   Cerrar
                 </Button>
+                <IconButton
+                size="small"
+                disableRipple
+                color="inherit"
+                sx={navbarMobileMenu}
+                onClick={handleMiniSidenav}
+              >
+                <Icon sx={iconsStyle} fontSize="medium">
+                  {miniSidenav ? "menu_open" : "menu"}
+                </Icon>
+              </IconButton>
             </MDBox>
           </MDBox>
         )}
