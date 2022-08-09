@@ -1,25 +1,29 @@
 /* eslint-disable array-callback-return */
 
 
-import { Box, Button, Card, FormGroup, Grid, Input, Select } from '@mui/material';
+import { Box, Button, Card, CircularProgress, FormGroup, Grid, Input, Select } from '@mui/material';
 import axios from 'axios';
 import MDBox from 'components/MDBox';
 import MDTypography from 'components/MDTypography';
 import DashboardLayout from 'examples/LayoutContainers/DashboardLayout';
 import DashboardNavbar from 'examples/Navbars/DashboardNavbar';
-import React, { useState, useRef,  } from 'react';
+import React, { useState, useRef, } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import { dataCliente, dataClienteId } from '../../function/localstore/storeUsuario';
 import { Fecha } from '../../function/util/usuario';
+import { red, blue } from '@mui/material/colors';
 
 
-function Pagar(props) {
+function Pagar() {
     const [estadoBusqueda, setEstadoBusqueda] = useState(false);
     const [resultaBusqueda, setResultaBusqueda] = useState(null);
 
     const [estadoPagar, setEstadoPagar] = useState(false);
     const [bloqueoPagar, setBloqueoPagar] = useState(true);
+
+    const [loading, setLoading] = useState(true);
+    const [error, seterror] = useState(null);
 
     const [estadoTransaccion, setEstadoTransaccion] = useState(false);
     const [bloqueoTotal, setBloqueoTotal] = useState(false);
@@ -27,7 +31,6 @@ function Pagar(props) {
     const componentRef = useRef();
 
     const [dataPersona, setdataPersona] = useState(null);
-    const [datosClient, setdatosClient] = useState(null);
     const [factura, setfactura] = useState(null);
     const [select, setselect] = useState(null);
     const [total, settotal] = useState(null);
@@ -45,43 +48,51 @@ function Pagar(props) {
     });
 
     function reset() {
-        // setestadoPado(null)
         setSaldoInsuficiente(false);
         setEstadoTransaccion(false);
         setEstadoBusqueda(false);
         setEstadoPagar(false);
+        seterror(null);
     }
+
     const Search = async (e) => {
         const { value } = e.target;
         reset();
         if (value.length === 10 || value.length === 13) {
-            console.log("entro a la funcion");
+            setLoading(true)
             setestacedula(value)
-            const { data } = await axios.post('https://rec.netbot.ec/v1/api/cliente', { cedula: value }, {
-                headers: {
-                    'Authorization': 'Basic YWRtaW46YWRtaW4=',
-                    'Content-Type': 'application/json'
+            try {
+                const { data } = await axios.post('https://rec.netbot.ec/v1/api/cliente', { cedula: value }, {
+                    headers: {
+                        'Authorization': 'Basic YWRtaW46YWRtaW4=',
+                        'Content-Type': 'application/json'
+                    }
+                })//buscar cliente
+                if (data.success) {
+                    setEstadoBusqueda(true);
+                    setResultaBusqueda(data.msg);
+                    setLoading(false);
+                } else {
+                    setEstadoBusqueda(false);
+                    setLoading(false);
+                    setEstadoPagar(true);
+                    setselect(data)
+                    setidcliente(data[0].idcliente)
+                    var Iterable = []
+                    let total = 0
+                    data.map(items => {
+                        total += items.total
+                        setResultaBusqueda(items.datosClient)
+                        Iterable.push(items.info)
+                        localStorage.setItem('dataClient:', JSON.stringify(Iterable))
+                    })
+                    settotal(`Total a pagar $` + total.toFixed(2))
                 }
-            })//buscar cliente
-            if (data.success) {
-                setEstadoBusqueda(true);
-                setResultaBusqueda(data.msg);
-            } else {
-                setEstadoBusqueda(false);
-                setEstadoPagar(true);
-                setselect(data)
-                setidcliente(data[0].idcliente)
-                var Iterable = []
-                let total = 0
-                data.map(items => {
-                    total += items.total
-                    setdatosClient(items.datosClient)
-                    Iterable.push(items.info)
-                    localStorage.setItem('dataClient:', JSON.stringify(Iterable))
-                })
-                settotal(`Total a pagar $` + total.toFixed(2))
+                //0928676485  1104892367  0923980742001  0911663110  
+            } catch (error) {
+                seterror("Lo sentimos, no se pudo conectar con el servidor")
+                setLoading(false)
             }
-            console.log(data)//0928676485  1104892367  0923980742001  0911663110
         }
     }
 
@@ -126,45 +137,53 @@ function Pagar(props) {
         settotalF(e.target.value)
         setBloqueoPagar(false)
     }
+
     // function handleClear() {
     //     setestadoPado(null)
     //     setlinkfactura(null)
     // }
+
     const hanblePagar = async () => {
         if (totalF.length > 0) {
-            console.log(totalF)
-            let info = {
-                "pasarela": dataCliente().nombre_tienda,
-                "id_tienda": dataCliente().id,
-                "total": totalF,
-                "recaudacion": dataCliente().comision,
-                "accounts_id": dataCliente().accounts_id,
-                "idfactura": parseInt(factura),
-                "idcliente": idcliente,
-                "cedula": estacedula,
-                "token": dataCliente().token_sistema,
-                "cliente": datosClient,
-                "telefono": dataClienteId(selectIdfactura).telefono,
-                "movil": dataClienteId(selectIdfactura).movil,
-            }
-            console.log(info);
-            const { data } = await axios.post('https://rec.netbot.ec/v1/api/pagar', info, {
-                headers: {
-                    'Authorization': 'Basic YWRtaW46YWRtaW4=',
-                    'Content-Type': 'application/json'
+            try {
+                setLoading(true)
+                let info = {
+                    "pasarela": dataCliente().nombre_tienda,
+                    "id_tienda": dataCliente().id,
+                    "total": totalF,
+                    "recaudacion": dataCliente().comision,
+                    "accounts_id": dataCliente().accounts_id,
+                    "idfactura": parseInt(factura),
+                    "idcliente": idcliente,
+                    "cedula": estacedula,
+                    "token": dataCliente().token_sistema,
+                    "cliente": resultaBusqueda,
+                    "telefono": dataClienteId(selectIdfactura).telefono,
+                    "movil": dataClienteId(selectIdfactura).movil,
                 }
-            })
-            console.log(data);
-            if (data.success) {
-                setSaldoInsuficiente(true)
-                setestadoPado(data.data.salida)
-                settransacion(data.transacion_id)
-                setEstadoTransaccion(true)
-                settotalF(null)
-            } else {
-                setSaldoInsuficiente(true)
-                setestadoPado(data.msg)
+                const { data } = await axios.post('https://rec.netbot.ec/v1/api/pagars', info, {
+                    headers: {
+                        'Authorization': 'Basic YWRtaW46YWRtaW4=',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                if (data.success) {
+                    setLoading(false)
+                    setSaldoInsuficiente(true)
+                    setestadoPado(data.data.salida)
+                    settransacion(data.transacion_id)
+                    setEstadoTransaccion(true)
+                    settotalF(null)
+                } else {
+                    setLoading(false)
+                    setSaldoInsuficiente(true)
+                    setestadoPado(data.msg)
+                }
+            } catch (error) {
+                setLoading(false)
+                seterror("Lo sentimos, no se pudo conectar con el servidor")
             }
+
         }
     }
 
@@ -172,24 +191,68 @@ function Pagar(props) {
         <DashboardLayout>
             <DashboardNavbar />
             <Card>
-                <MDBox p={3} lineHeight={1}>
-                    <MDTypography variant="h5" fontWeight="medium">
-                        Buscar Cliente A Pagar
-                        <p>Tienda  {dataCliente().nombre_tienda}</p>
-                    </MDTypography>
-                    <Box sx={{ width: '30%' }}>
-                        <FormGroup sx={{ p: 2, minWidth: 120 }} >
-                            <Input label="Buscar Cliente" placeholder="Buscar Cliente" type='number' name="cedula" color="secondary" onChange={Search} />
-                        </FormGroup>
-                    </Box>
-                </MDBox>
-                {estadoBusqueda
-                    ? <MDBox p={3} lineHeight={1}>
-                        <MDTypography variant="h5" fontWeight="medium">
-                            Resultado del Cliente: {' '} {resultaBusqueda}
-                        </MDTypography>
-                    </MDBox> : null
-                }
+                <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 6 }}>
+                    <Grid item xs={12} sm={6} md={6}>
+                        <MDBox p={3} lineHeight={1}>
+                            <MDTypography variant="h5" fontWeight="medium">
+                                Buscar Cliente A Pagar
+                                <p>Tienda  {dataCliente().nombre_tienda}</p>
+                            </MDTypography>
+                            <Box sx={{ width: '30%' }}>
+                                <FormGroup sx={{ p: 2, minWidth: 120 }} >
+                                    <Input label="Buscar Cliente" placeholder="Buscar Cliente" type='number' name="cedula" color="secondary" onChange={Search} />
+                                </FormGroup>
+                                {loading  ?
+                                        <>
+                                            <CircularProgress
+                                                size={100}
+                                                value={100}
+                                                sx={{
+                                                    color: blue[500],
+                                                    position: 'absolute',
+                                                    top: '50%',
+                                                    left: '50%',
+                                                    marginTop: '-12px',
+                                                    marginLeft: '-12px',
+                                                }}
+                                            />
+
+                                            <MDTypography variant="h5" fontWeight="medium" sx={{
+                                                textAlign: 'center',
+                                                position: 'absolute',
+                                                paddingTop: '10%',
+                                                color: blue[500],
+                                                top: '50%',
+                                                left: '50%',
+                                                marginTop: '-12px',
+                                                marginLeft: '-12px',
+                                            }}>
+                                                Cargando..
+                                            </MDTypography>
+                                        </>
+                                        : null
+                                    }
+                            </Box>
+                        </MDBox>
+                        {estadoBusqueda
+                            ? <MDBox p={3} lineHeight={1}>
+                                <MDTypography variant="h5" fontWeight="medium">
+                                    Resultado del Cliente: {' '} {resultaBusqueda}
+                                </MDTypography>
+                            </MDBox> : null
+                        }
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={6}>
+                        {estadoPagar ?
+                            <MDBox p={3} lineHeight={1}>
+                                <MDTypography variant="h5" fontWeight="medium">
+                                    <p>Cliente: {resultaBusqueda}</p>
+                                </MDTypography>
+                            </MDBox>
+                            : null
+                        }
+                    </Grid>
+                </Grid>
                 {estadoPagar ?
                     <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 6 }}>
                         <Grid item xs={12} sm={6} md={6}>
@@ -222,6 +285,41 @@ function Pagar(props) {
                                     <FormGroup sx={{ p: 3, minWidth: 120 }} >
                                         <Button sx={{ p: 2 }} color="dark" disabled={bloqueoPagar} onClick={hanblePagar}><LocalAtmIcon fontSize="large" />Pagar</Button>
                                     </FormGroup>
+                                    <MDTypography variant="body2" fontWeight="regular" color="error" mt={1}>
+                                         {error}
+                                    </MDTypography>
+
+
+                                    {loading  ?
+                                        <>
+                                            <CircularProgress
+                                                size={100}
+                                                value={100}
+                                                sx={{
+                                                    color: blue[500],
+                                                    position: 'absolute',
+                                                    top: '50%',
+                                                    left: '50%',
+                                                    marginTop: '-12px',
+                                                    marginLeft: '-12px',
+                                                }}
+                                            />
+
+                                            <MDTypography variant="h5" fontWeight="medium" sx={{
+                                                textAlign: 'center',
+                                                position: 'absolute',
+                                                paddingTop: '10%',
+                                                color: blue[500],
+                                                top: '50%',
+                                                left: '50%',
+                                                marginTop: '-12px',
+                                                marginLeft: '-12px',
+                                            }}>
+                                                Cargando..
+                                            </MDTypography>
+                                        </>
+                                        : null
+                                    }
                                 </Box>
                             </MDBox>
                         </Grid>
@@ -249,12 +347,12 @@ function Pagar(props) {
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>*****************************************</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>DESCUENTO: $ 0.00</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>COMISION: {dataCliente().comision}</p>
-                                    <p style={{ fontSize: 16, lineHeight: 1.2 }}>TOTAL: {selectIdfactura !== null ? (parseFloat(dataClienteId(selectIdfactura).total) +  parseFloat(dataCliente().comision)).toFixed(2) : "0.0"}</p>
+                                    <p style={{ fontSize: 16, lineHeight: 1.2 }}>TOTAL: {selectIdfactura !== null ? (parseFloat(dataClienteId(selectIdfactura).total) + parseFloat(dataCliente().comision)).toFixed(2) : "0.0"}</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>SALDO: $0.00</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>*****************************************</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>CLIENTE</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>*****************************************</p>
-                                    <p style={{ fontSize: 16, lineHeight: 1.2 }}>NOMBRE: {datosClient != null ? datosClient.substring(0,25) :''}</p>
+                                    <p style={{ fontSize: 16, lineHeight: 1.2 }}>NOMBRE: {resultaBusqueda != null ? resultaBusqueda.substring(0, 25) : ''}</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>DIRECCION: {selectIdfactura !== null ? dataClienteId(selectIdfactura).direccion.substring(0, 25) : ''}</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>CEDULA: {selectIdfactura !== null ? dataClienteId(selectIdfactura).cedula : ''}</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>FECHA CORTE: {selectIdfactura !== null ? dataClienteId(selectIdfactura).fecha_corte : ''}</p>
@@ -265,16 +363,6 @@ function Pagar(props) {
                                 {/* <Button variant='' color='dark'>ENVIAR A WHATSAPP</Button> */}
                             </MDBox>
                         </Grid>
-                        {/* <Grid item xs={12} sm={6} md={6}>
-                            <MDBox p={3} lineHeight={1}>
-                                <MDTypography variant="h5" fontWeight="medium" sx={{ textAlign: 'center' }}>
-                                    <p>
-                                        {estadoPado}
-                                    </p>
-                                    <a href={linkfactura} target="_blank" onClick={() => handleClear()} rel="noopener noreferrer">Click para descargar el comprobate </a>
-                                </MDTypography>
-                            </MDBox>
-                        </Grid> */}
                     </Grid>
                     : null}
                 {saldoInsuficiente

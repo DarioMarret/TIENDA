@@ -10,6 +10,7 @@ import Grid from "@mui/material/Grid";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import { red, blue } from '@mui/material/colors';
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 
@@ -20,15 +21,21 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 import useAuth from "hook/useAuth";
 import axios from "axios";
+import { CircularProgress } from "@mui/material";
 
 function Basic() {
   const [rememberMe, setRememberMe] = useState(false);
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
+  const [loading, setLoading] = useState(false);
+  const [color, setcolor] = useState(true);
+  const [error, seterror] = useState(null);
   const [user, setUser] = useState({
-    username: String,
-    password: String,
+    username: '',
+    password: '',
   });
   function handleuser(e) {
+    seterror(null);
+    setcolor(true);
     setUser({
       ...user,
       [e.target.name]: e.target.value
@@ -39,15 +46,30 @@ function Basic() {
 
   const logup = async () => {
     if (user.username !== '' || user.password !== '') {
-      const {data} = await axios.post('https://rec.netbot.ec/v1/api/login_tienda', user, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Basic YWRtaW46YWRtaW4=`
+      setLoading(true);
+      try {
+        const { data } = await axios.post('https://rec.netbot.ec/v1/api/login_tienda', user, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic YWRtaW46YWRtaW4=`
+          }
+        });
+        if (data.success !== false) {
+          setcolor(true)
+          login(data.data)
+          setLoading(false);
+        } else {
+          setcolor(false)
+          setLoading(false);
+          seterror(data.message)
         }
-      });
-      console.log(data.data)
-      if (data.success !== false) login(data.data)
+      } catch (error) {
+        seterror(error.message);
+        setLoading(false);
+      }
     }
+
+
   }
 
   return (
@@ -91,9 +113,33 @@ function Basic() {
               </MDTypography>
             </MDBox>
             <MDBox mt={4} mb={1}>
-              <MDButton variant="gradient" color="dark" fullWidth onClick={() => logup()}>
+              <MDButton
+                variant="gradient"
+                color="dark"
+                fullWidth
+                loading={true}
+                onClick={() => logup()}>
                 Ingresar
               </MDButton>
+              {loading && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: color ? blue[500] : red[500],
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    marginTop: '-12px',
+                    marginLeft: '-12px',
+                  }}
+                />
+              )}
+              {
+                error != null ?
+                  <MDTypography variant="body2" fontWeight="regular" color="error" mt={1}>
+                    {error}
+                  </MDTypography> : null
+              }
             </MDBox>
             <MDBox mt={3} mb={1} textAlign="center">
               <MDTypography variant="button" color="text">
