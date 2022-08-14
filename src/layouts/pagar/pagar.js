@@ -13,6 +13,8 @@ import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import { dataCliente, dataClienteId } from '../../function/localstore/storeUsuario';
 import { Fecha } from '../../function/util/usuario';
 import { red, blue } from '@mui/material/colors';
+import { GeneraTicket } from 'function/util/genereTicket';
+import { Ticket } from 'function/util/genereTicket';
 
 
 function Pagar() {
@@ -58,11 +60,13 @@ function Pagar() {
     const Search = async (e) => {
         const { value } = e.target;
         reset();
+        var host = dataCliente().host
+        var token = dataCliente().token
         if (value.length === 10 || value.length === 13) {
             setLoading(true)
             setestacedula(value)
             try {
-                const { data } = await axios.post('https://rec.netbot.ec/v1/api/cliente', { cedula: value }, {
+                const { data } = await axios.post('https://rec.netbot.ec/v1/api/cliente', { cedula: value, host, token }, {
                     headers: {
                         'Authorization': 'Basic YWRtaW46YWRtaW4=',
                         'Content-Type': 'application/json'
@@ -98,13 +102,16 @@ function Pagar() {
 
     const onChangeTag = async (e) => {
         console.log(e);
+        var host = dataCliente().host
+        var token = dataCliente().token
         if (e !== "" && e !== "0") {
             let id = e.indexOf(',')
             let idfactura = e
             setfactura(idfactura)
             if (id !== -1) {
                 setBloqueoTotal(true)
-                const { data } = await axios.post('https://rec.netbot.ec/v1/api/factura', { idfactura }, {
+
+                const { data } = await axios.post('https://rec.netbot.ec/v1/api/factura', { idfactura, host, token }, {
                     headers: {
                         'Authorization': 'Basic YWRtaW46YWRtaW4=',
                         'Content-Type': 'application/json'
@@ -115,7 +122,7 @@ function Pagar() {
                 setBloqueoPagar(false)
                 setselectIdfactura(data.idfactura)
             } else {
-                const { data } = await axios.post('https://rec.netbot.ec/v1/api/factura', { idfactura }, {
+                const { data } = await axios.post('https://rec.netbot.ec/v1/api/factura', { idfactura, host, token }, {
                     headers: {
                         'Authorization': 'Basic YWRtaW46YWRtaW4=',
                         'Content-Type': 'application/json'
@@ -156,7 +163,9 @@ function Pagar() {
                     "idfactura": parseInt(factura),
                     "idcliente": idcliente,
                     "cedula": estacedula,
-                    "token": dataCliente().token_sistema,
+                    "host": dataCliente().host,
+                    "token": dataCliente().token,
+                    "token_sistema": dataCliente().token_sistema,
                     "cliente": resultaBusqueda,
                     "telefono": dataClienteId(selectIdfactura).telefono,
                     "movil": dataClienteId(selectIdfactura).movil,
@@ -168,6 +177,17 @@ function Pagar() {
                     }
                 })
                 if (data.success) {
+                    let info_1 = {
+                        "fecha":`${Fecha("DD-MM-YYYY HH:mm:ss")}`,
+                        "comision":`${dataCliente().comision}`,
+                        "total":`${(parseFloat(dataClienteId(selectIdfactura).total) + parseFloat(dataCliente().comision)).toFixed(2)}`,
+                        "cliente":`${resultaBusqueda.substring(0, 25)}`,         
+                        "direccion":`${dataClienteId(selectIdfactura).direccion.substring(0, 25)}`,
+                        "cedula":`${dataClienteId(selectIdfactura).cedula}`,
+                        "fecha_corte":`${dataClienteId(selectIdfactura).fecha_corte}`,
+                        "numero_control":`${data.transacion_id}`,
+                    }
+                    // await GeneraTicket(info_1)
                     setLoading(false)
                     setSaldoInsuficiente(true)
                     setestadoPado(data.data.salida)
@@ -183,8 +203,11 @@ function Pagar() {
                 setLoading(false)
                 seterror("Lo sentimos, no se pudo conectar con el servidor")
             }
-
         }
+    }
+    const hanbleTickets = async () => {
+            let tickets = Ticket()
+
     }
 
     return (
@@ -345,7 +368,7 @@ function Pagar() {
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>*****************************************</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>DESCRIPCION</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>*****************************************</p>
-                                    <p style={{ fontSize: 16, lineHeight: 1.2 }}>DESCUENTO: $ 0.00</p>
+                                    <p style={{ fontSize: 16, lineHeight: 1.2 }}>DESCUENTO: $0.00</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>COMISION: {dataCliente().comision}</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>TOTAL: {selectIdfactura !== null ? (parseFloat(dataClienteId(selectIdfactura).total) + parseFloat(dataCliente().comision)).toFixed(2) : "0.0"}</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>SALDO: $0.00</p>
@@ -360,7 +383,7 @@ function Pagar() {
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>NUMERO CONTROL: {transacion != null ? transacion : ''}</p>
                                 </MDTypography>
                                 <Button variant='' onClick={handlePrint} >IMPRIMIR</Button>
-                                {/* <Button variant='' color='dark'>ENVIAR A WHATSAPP</Button> */}
+                                <Button variant='' onClick={hanbleTickets} color='dark'>ENVIAR A WHATSAPP</Button>
                             </MDBox>
                         </Grid>
                     </Grid>
