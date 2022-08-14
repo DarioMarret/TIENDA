@@ -62,6 +62,8 @@ function Pagar() {
         reset();
         var host = dataCliente().host
         var token = dataCliente().token
+        console.log(host)
+        console.log(token)
         if (value.length === 10 || value.length === 13) {
             setLoading(true)
             setestacedula(value)
