@@ -175,7 +175,6 @@ function Pagar() {
     //     setestadoPado(null)
     //     setlinkfactura(null)
     // }
-    console.log(dataCliente())
 
     const handleSubmit = async (event) => {
         event.preventDefault();
