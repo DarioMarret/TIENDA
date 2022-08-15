@@ -489,7 +489,7 @@ function Pagar() {
                         </Grid>
                     </Grid>
                     : null}
-                {/*estadoTransaccion*/ true ?
+                {estadoTransaccion ?
                     <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 6 }}>
                         <Grid item xs={12} sm={6} md={6}>
                             <MDBox p={3} fullWidth={true} >
