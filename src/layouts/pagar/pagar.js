@@ -175,6 +175,8 @@ function Pagar() {
     //     setestadoPado(null)
     //     setlinkfactura(null)
     // }
+    console.log(dataCliente())
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         var datosCliente = dataClienteId(selectIdfactura)
@@ -240,6 +242,7 @@ function Pagar() {
                 if (data.success) {
                     var datosCliente = dataClienteId(selectIdfactura)
                     let info_1 = {
+                        "empresa":`${dataCliente().accounts.toUpperCase()} S.A`,
                         "fecha": `${Fecha("DD-MM-YYYY HH:mm:ss")}`,
                         "comision": `${dataCliente().comision}`,
                         "total": `${(parseFloat(datosCliente.total) + parseFloat(dataCliente().comision)).toFixed(2)}`,
@@ -489,14 +492,13 @@ function Pagar() {
                         </Grid>
                     </Grid>
                     : null}
-                {estadoTransaccion ?
+                {/*estadoTransaccion*/ true ?
                     <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 6 }}>
                         <Grid item xs={12} sm={6} md={6}>
                             <MDBox p={3} fullWidth={true} >
                                 <MDTypography variant="h6" fontWeight="medium" sx={{ textAlign: 'left' }} ref={componentRef}>
-                                    <p style={{ fontSize: 19, lineHeight: 1.2 }}>COMNET (COMPUTECNICSNET S.A)</p>
-                                    <p style={{ fontSize: 16, lineHeight: 1.2 }}>RUC 092782129001</p>
-                                    <p style={{ fontSize: 16, lineHeight: 1.2 }}>COOP. PANCHO JACOME MZ.240 SL.20</p>
+                                    <p style={{ fontSize: 19, lineHeight: 1.2 }}>{dataCliente().accounts.toUpperCase()} S.A</p>
+                                    <p style={{ fontSize: 19, lineHeight: 1.2 }}>COMPROBANTE DE PAGO</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>FECHA: {Fecha("DD-MM-YYYY HH:mm:ss")}</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>*****************************************</p>
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>DESCRIPCION</p>
