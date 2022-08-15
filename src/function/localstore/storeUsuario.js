@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 import { dataClientes, usuario_local } from "../util/global";
 import jwt_decode from "jwt-decode";
 
@@ -50,4 +51,9 @@ export const dataClienteId = (idfactura) => {
         })
         return items
     }
+}
+
+export const dataClienteGet = () => {
+    const parse = JSON.parse(localStorage.getItem(dataClientes))
+    return parse[0]
 }

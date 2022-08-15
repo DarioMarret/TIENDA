@@ -1,7 +1,8 @@
+/* eslint-disable eqeqeq */
 /* eslint-disable array-callback-return */
 
 
-import { Box, Button, Card, CircularProgress, FormGroup, Grid, Input, Select } from '@mui/material';
+import { Alert, Box, Button, Card, CircularProgress, FormControl, FormGroup, Grid, Input, MenuItem, Modal, Select } from '@mui/material';
 import axios from 'axios';
 import MDBox from 'components/MDBox';
 import MDTypography from 'components/MDTypography';
@@ -10,11 +11,27 @@ import DashboardNavbar from 'examples/Navbars/DashboardNavbar';
 import React, { useState, useRef, } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
-import { dataCliente, dataClienteId } from '../../function/localstore/storeUsuario';
+import { dataCliente, dataClienteGet, dataClienteId } from '../../function/localstore/storeUsuario';
 import { Fecha } from '../../function/util/usuario';
-import { red, blue } from '@mui/material/colors';
+import { blue } from '@mui/material/colors';
 import { GeneraTicket } from 'function/util/genereTicket';
-import { Ticket } from 'function/util/genereTicket';
+import { UtimoTicket } from 'function/util/global';
+import Swal from 'sweetalert2'
+
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '1px solid white',
+    borderRadius: '5px',
+    boxShadow: 24,
+    pt: 2,
+    px: 4,
+    pb: 3,
+}
 
 
 function Pagar() {
@@ -44,6 +61,13 @@ function Pagar() {
     // const [estadoSpinner, setestadoSpinner] = useState(false);
     const [transacion, settransacion] = useState(null);
     const [selectIdfactura, setselectIdfactura] = useState(null);
+
+
+    const [data, setdata] = useState([]);
+    const [numero, setnumero] = useState(null);
+    const [opcional, setopcional] = useState(null);
+    const [ticket, setticket] = useState(null);
+    const [open_2, setOpen_2] = useState(false);
 
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
@@ -151,7 +175,42 @@ function Pagar() {
     //     setestadoPado(null)
     //     setlinkfactura(null)
     // }
-
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        var datosCliente = dataClienteId(selectIdfactura)
+        if (parseFloat(datosCliente.total) > 0) {
+            Swal.fire({
+                title: `Esta seguro de realizar el pago de  $${parseFloat(datosCliente.total)} \n a la factura: ${selectIdfactura} \n con fecha de corte : ${datosCliente.fecha_corte}`,
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Aceptar',
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const response = await hanblePagar()
+                    if (response) {
+                        limpiar()
+                        Swal.fire({
+                            title: 'Pago Exitoso',
+                            text: 'El pago se realizo correctamente',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        })
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Lo Sentimo ubo un error al realizar el pago',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        })
+                    }
+                } else if (result.isDenied) {
+                    Swal.fire('Cambiar factura a Pagar', '', 'info')
+                }
+            })
+        } else {
+            Swal.fire('El valor a pagar no es aceptado', '', 'info')
+        }
+    }
     const hanblePagar = async () => {
         if (totalF.length > 0) {
             try {
@@ -179,43 +238,115 @@ function Pagar() {
                     }
                 })
                 if (data.success) {
+                    var datosCliente = dataClienteId(selectIdfactura)
                     let info_1 = {
-                        "fecha":`${Fecha("DD-MM-YYYY HH:mm:ss")}`,
-                        "comision":`${dataCliente().comision}`,
-                        "total":`${(parseFloat(dataClienteId(selectIdfactura).total) + parseFloat(dataCliente().comision)).toFixed(2)}`,
-                        "cliente":`${resultaBusqueda.substring(0, 25)}`,         
-                        "direccion":`${dataClienteId(selectIdfactura).direccion.substring(0, 25)}`,
-                        "cedula":`${dataClienteId(selectIdfactura).cedula}`,
-                        "fecha_corte":`${dataClienteId(selectIdfactura).fecha_corte}`,
-                        "numero_control":`${data.transacion_id}`,
+                        "fecha": `${Fecha("DD-MM-YYYY HH:mm:ss")}`,
+                        "comision": `${dataCliente().comision}`,
+                        "total": `${(parseFloat(datosCliente.total) + parseFloat(dataCliente().comision)).toFixed(2)}`,
+                        "cliente": `${resultaBusqueda.substring(0, 25)}`,
+                        "direccion": `${datosCliente.direccion.substring(0, 25)}`,
+                        "cedula": `${datosCliente.cedula}`,
+                        "fecha_corte": `${datosCliente.fecha_corte}`,
+                        "numero_control": `${data.transacion_id}`,
+                        "link": `${data.link}`,
                     }
-                    // await GeneraTicket(info_1)
+                    await GeneraTicket(info_1)
                     setLoading(false)
                     setSaldoInsuficiente(true)
                     setestadoPado(data.data.salida)
                     settransacion(data.transacion_id)
                     setEstadoTransaccion(true)
                     settotalF(null)
+                    return true
                 } else {
                     setLoading(false)
                     setSaldoInsuficiente(true)
                     setestadoPado(data.msg)
+                    return false
                 }
             } catch (error) {
                 setLoading(false)
                 seterror("Lo sentimos, no se pudo conectar con el servidor")
+                return false
             }
+        } else {
+            return false
         }
     }
-    const hanbleTickets = async () => {
-            let tickets = Ticket()
 
+
+    function handleOpen2() {
+        limpiar()
+        setOpen_2(!open_2);
+    }
+    function limpiar() {
+        setnumero(null);
+        setopcional(null);
+    }
+
+    async function send() {
+        var datosCliente = dataClienteGet()
+        let movil = datosCliente.movil.replace(/ /g, '').substr(1, 9);
+        let telefono = datosCliente.telefono.replace(/ /g, '').substr(1, 9);
+        setdata([{ "fn": movil }, { "fn": telefono }])
+        handleOpen2()
+    }
+
+    const [stn, setstn] = useState(false)
+    const [sto, setsto] = useState(false)
+    const [stsmsn, setsmsn] = useState('')
+    const [stsmso, setsmso] = useState('')
+
+    async function whatsappsend() {
+        if (numero != null && numero.length == 9 && ticket != "") {
+            const { data } = await axios.post(`${dataCliente().host_whatsapp}/api/send_whatsapp`, {
+                from: `593${numero}@c.us`,
+                "mensaje": localStorage.getItem(UtimoTicket),
+            })
+            if (data.success) {
+                setstn(data.success)
+                setsmsn(data.msg)
+            } else {
+                setstn(data.success)
+                setsmsn(data.msg)
+            }
+            setTimeout(() => {
+                setstn(false)
+                setsmsn('')
+            }, 3000)
+            handleOpen2()
+        }
+
+        if (opcional != null && opcional.length == 10 && ticket !== "") {
+            const { data } = await axios.post(`${dataCliente().host_whatsapp}/api/send_whatsapp`, {
+                from: `593${opcional.replace(/ /g, '').substr(1, 9)}@c.us`,
+                "mensaje": localStorage.getItem(UtimoTicket),
+            })
+            if (data.success) {
+                setsto(data.success)
+                setsmso(data.msg)
+            } else {
+                setsto(data.success)
+                setsmso(data.msg)
+            }
+            setTimeout(() => {
+                setsto(false)
+                setsmso('')
+            }, 3000)
+            handleOpen2()
+        }
     }
 
     return (
         <DashboardLayout>
             <DashboardNavbar />
             <Card>
+
+                {stsmsn != '' ? <Alert severity={stn ? "success" : "error"}>{stsmsn}</Alert> : ''}
+
+                {stsmso != '' ? <Alert severity={sto ? "success" : "error"}>{stsmso}</Alert> : ''}
+
+
                 <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 6 }}>
                     <Grid item xs={12} sm={6} md={6}>
                         <MDBox p={3} lineHeight={1}>
@@ -227,36 +358,36 @@ function Pagar() {
                                 <FormGroup sx={{ p: 2, minWidth: 120 }} >
                                     <Input label="Buscar Cliente" placeholder="Buscar Cliente" type='number' name="cedula" color="secondary" onChange={Search} />
                                 </FormGroup>
-                                {loading  ?
-                                        <>
-                                            <CircularProgress
-                                                size={100}
-                                                value={100}
-                                                sx={{
-                                                    color: blue[500],
-                                                    position: 'absolute',
-                                                    top: '50%',
-                                                    left: '50%',
-                                                    marginTop: '-12px',
-                                                    marginLeft: '-12px',
-                                                }}
-                                            />
-
-                                            <MDTypography variant="h5" fontWeight="medium" sx={{
-                                                textAlign: 'center',
-                                                position: 'absolute',
-                                                paddingTop: '10%',
+                                {loading ?
+                                    <>
+                                        <CircularProgress
+                                            size={100}
+                                            value={100}
+                                            sx={{
                                                 color: blue[500],
+                                                position: 'absolute',
                                                 top: '50%',
                                                 left: '50%',
                                                 marginTop: '-12px',
                                                 marginLeft: '-12px',
-                                            }}>
-                                                Cargando..
-                                            </MDTypography>
-                                        </>
-                                        : null
-                                    }
+                                            }}
+                                        />
+
+                                        <MDTypography variant="h5" fontWeight="medium" sx={{
+                                            textAlign: 'center',
+                                            position: 'absolute',
+                                            paddingTop: '10%',
+                                            color: blue[500],
+                                            top: '50%',
+                                            left: '50%',
+                                            marginTop: '-12px',
+                                            marginLeft: '-12px',
+                                        }}>
+                                            Cargando..
+                                        </MDTypography>
+                                    </>
+                                    : null
+                                }
                             </Box>
                         </MDBox>
                         {estadoBusqueda
@@ -308,14 +439,14 @@ function Pagar() {
                                 </Box>
                                 <Box sx={{ width: '100%' }}>
                                     <FormGroup sx={{ p: 3, minWidth: 120 }} >
-                                        <Button sx={{ p: 2 }} color="dark" disabled={bloqueoPagar} onClick={hanblePagar}><LocalAtmIcon fontSize="large" />Pagar</Button>
+                                        <Button sx={{ p: 2 }} color="dark" disabled={bloqueoPagar} onClick={handleSubmit}><LocalAtmIcon fontSize="large" />Pagar</Button>
                                     </FormGroup>
                                     <MDTypography variant="body2" fontWeight="regular" color="error" mt={1}>
-                                         {error}
+                                        {error}
                                     </MDTypography>
 
 
-                                    {loading  ?
+                                    {loading ?
                                         <>
                                             <CircularProgress
                                                 size={100}
@@ -358,7 +489,7 @@ function Pagar() {
                         </Grid>
                     </Grid>
                     : null}
-                {estadoTransaccion ?
+                {/*estadoTransaccion*/ true ?
                     <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 6 }}>
                         <Grid item xs={12} sm={6} md={6}>
                             <MDBox p={3} fullWidth={true} >
@@ -385,7 +516,7 @@ function Pagar() {
                                     <p style={{ fontSize: 16, lineHeight: 1.2 }}>NUMERO CONTROL: {transacion != null ? transacion : ''}</p>
                                 </MDTypography>
                                 <Button variant='' onClick={handlePrint} >IMPRIMIR</Button>
-                                <Button variant='' onClick={hanbleTickets} color='dark'>ENVIAR A WHATSAPP</Button>
+                                <Button variant='' onClick={send} color='dark'>ENVIAR A WHATSAPP</Button>
                             </MDBox>
                         </Grid>
                     </Grid>
@@ -398,7 +529,50 @@ function Pagar() {
                     </MDBox> : null
                 }
             </Card>
+            <Modal
+                open={open_2}
+                onClose={handleOpen2}
+                aria-labelledby="parent-modal-title"
+                aria-describedby="parent-modal-description"
+            >
+                <Box sx={{ ...style, width: '30%' }}>
+                    <div style={{ alignItems: 'center' }}>
+                        <h2 id="parent-modal-title">Enviar Comprobante</h2>
+                        <br />
+                        <label>
+                            Numero Whatsapp:
+                            <FormControl sx={{ p: 3, minWidth: 120 }} fullWidth={true}>
+                                <Select
+                                    id="demo-simple-select"
+                                    value={numero}
+                                    style={{ ...style, height: 50, width: '100%' }}
+                                    onChange={(event) => setnumero(event.target.value)}
+                                >
+                                    {
+                                        data != null ? data.map((item, index) => <MenuItem key={index + 1} value={item.fn}>{item.fn}</MenuItem>) : null
+                                    }
+                                </Select>
+                            </FormControl>
+                        </label>
+                        <RedBar />
+                        <label>
+                            Numero Opcional:
+                            <Input name="opcional" type="text" fullWidth={true} onChange={(event) => setopcional(event.target.value)} />
+                        </label>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                        <br />
+                        <Button variant="text" size="large" onClick={whatsappsend}>enviar</Button>
+                    </div>
+                </Box>
+
+            </Modal>
         </DashboardLayout >
+    );
+}
+function RedBar() {
+    return (
+        <Box sx={{ height: 20 }} />
     );
 }
 export default Pagar;
