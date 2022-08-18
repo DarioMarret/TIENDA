@@ -3,11 +3,13 @@ import Tables from "layouts/tables";
 import PaidIcon from '@mui/icons-material/Paid';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
 
 // @mui icons
 import Icon from "@mui/material/Icon";
 import Pagar from "layouts/pagar/pagar";
 import Creditod from "layouts/historial";
+import PreRegistro from "./layouts/Pre-registro";
 
 const routes = [
   {
@@ -42,14 +44,14 @@ const routes = [
     route: "/creditos",
     component: <Creditod />,
   },
-  // {
-  //   type: "collapse",
-  //   name: "reset contraceña",
-  //   key: "reset",
-  //   icon: <LockResetIcon />,
-  //   route: "/reset",
-  //   component: <Tables />,
-  // },
+  {
+    type: "collapse",
+    name: "Pre-registro",
+    key: "registro",
+    icon: <HowToRegIcon />,
+    route: "/pre-registro",
+    component: <PreRegistro />,
+  },
   // {
   //   type: "collapse",
   //   name: "Tables",

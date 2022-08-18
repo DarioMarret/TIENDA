@@ -335,3 +335,33 @@ export const UlmiasTransaciones = async (id) => {
         console.warn(error);
     }
 }
+
+export const ListarPreRegistro = async (id) => {
+    try {
+        const { data } = await axios.post(`${url}/api/preregistro`,{tienda_id:id},
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic YWRtaW46YWRtaW4=`
+                }
+            });
+        return data.success ? data.data : false
+    } catch (error) {
+        console.warn(error);
+    }
+}
+
+export const SavePreRegistro = async (preregistro) => {
+    try {
+        const { data } = await axios.post(`${url}/api/preregistro_save`,preregistro,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic YWRtaW46YWRtaW4=`
+                }
+            });
+        return data.success ? data.data : false
+    } catch (error) {
+        console.warn(error);
+    }
+}
