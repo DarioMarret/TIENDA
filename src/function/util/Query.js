@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { removeDatosUsuario } from 'function/localstore/storeUsuario';
 import { url } from './global';
 
 
@@ -361,6 +362,25 @@ export const SavePreRegistro = async (preregistro) => {
                 }
             });
         return data.success ? data.data : false
+    } catch (error) {
+        console.warn(error);
+    }
+}
+
+export const ValidarExistencia = async (cedula) => {
+    try {
+        const { data } = await axios.put(`${url}/api/validarTienda`,{cedula},
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic YWRtaW46YWRtaW4=`
+                }
+            });
+            console.log(data)
+            if(!data.success){
+                removeDatosUsuario()
+            }
+        return data.success
     } catch (error) {
         console.warn(error);
     }

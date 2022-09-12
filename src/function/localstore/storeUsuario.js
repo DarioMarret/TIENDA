@@ -38,6 +38,15 @@ export const dataCliente = () => {
     }
 }
 
+export const dataTiendaCedula = () => {
+    let user = getDatosUsuario();
+    if (user) {
+        return jwt_decode(user).cedula;
+    } else {
+        return null;
+    }
+}
+
 export const dataClienteId = (idfactura) => {
     if (idfactura != null) {
         var items;

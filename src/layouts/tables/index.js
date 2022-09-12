@@ -16,6 +16,9 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { dataCliente } from "function/localstore/storeUsuario";
 import { ListarTransaccionesTienda } from "function/util/Query";
 import axios from "axios";
+import { dataTiendaCedula } from "function/localstore/storeUsuario";
+import { ValidarExistencia } from "function/util/Query";
+import useAuth from "hook/useAuth";
 
 // Data
 const style = {
@@ -35,6 +38,8 @@ const style = {
 
 
 function Tables() {
+
+  const { logout } = useAuth()
   const [userTienda, setuserTienda] = useState([]);
   const [data, setdata] = useState([]);
   const [numero, setnumero] = useState(null);
@@ -103,8 +108,17 @@ function Tables() {
   useEffect(() => {
     (async () => {
       setuserTienda(await ListarTransaccionesTienda(dataCliente().id));
+      const cedula = dataTiendaCedula();
+      console.log(cedula);
+      const validar = await ValidarExistencia(cedula)
+      console.log(validar);
+      if (!validar) {
+        logout()
+      }
     })()
   }, []);
+
+
   return (
     <DashboardLayout>
       <DashboardNavbar />

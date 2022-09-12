@@ -16,15 +16,28 @@ import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 import { useEffect, useState } from "react";
 import { TotalCard } from "function/util/Query";
 import { dataCliente } from "function/localstore/storeUsuario";
+import { dataTiendaCedula } from "function/localstore/storeUsuario";
+import { ValidarExistencia } from "function/util/Query";
+import useAuth from "hook/useAuth";
 
 function Dashboard() {
   const [ Cards, setCards ] = useState([]);
 
+  const { logout } = useAuth()
+
   useEffect(() => {
     (async () => {
       setCards(await TotalCard(dataCliente().id));
+      const cedula = dataTiendaCedula();
+      console.log(cedula);
+      const validar =await ValidarExistencia(cedula)
+      console.log(validar);
+      if(!validar){
+        logout();
+      }
     })()
   }, []);
+
   return (
     <DashboardLayout>
       <DashboardNavbar />

@@ -8,15 +8,17 @@ import MDBox from 'components/MDBox';
 import MDTypography from 'components/MDTypography';
 import DashboardLayout from 'examples/LayoutContainers/DashboardLayout';
 import DashboardNavbar from 'examples/Navbars/DashboardNavbar';
-import React, { useState, useRef, } from 'react';
+import React, { useState, useRef, useEffect, } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
-import { dataCliente, dataClienteGet, dataClienteId } from '../../function/localstore/storeUsuario';
+import { dataCliente, dataClienteGet, dataClienteId, dataTiendaCedula } from '../../function/localstore/storeUsuario';
 import { Fecha } from '../../function/util/usuario';
 import { blue } from '@mui/material/colors';
 import { GeneraTicket } from 'function/util/genereTicket';
 import { UtimoTicket } from 'function/util/global';
 import Swal from 'sweetalert2'
+import { ValidarExistencia } from 'function/util/Query';
+import useAuth from 'hook/useAuth';
 
 const style = {
     position: 'absolute',
@@ -80,6 +82,19 @@ function Pagar() {
         setEstadoPagar(false);
         seterror(null);
     }
+    const { logout } = useAuth()
+
+    useEffect( () => {
+        (async()=>{
+            const cedula = dataTiendaCedula();
+            console.log(cedula);
+            const validar =await ValidarExistencia(cedula)
+            console.log(validar);
+            if(!validar){
+                logout()
+            }
+        })()
+    },[])
 
     const Search = async (e) => {
         const { value } = e.target;

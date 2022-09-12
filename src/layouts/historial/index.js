@@ -13,6 +13,9 @@ import React, { useEffect, useState } from "react";
 import { dataCliente } from "function/localstore/storeUsuario";
 import { ListarHistorialTienda } from "function/util/Query";
 import { SaldoActual } from "function/util/Query";
+import { dataTiendaCedula } from "function/localstore/storeUsuario";
+import { ValidarExistencia } from "function/util/Query";
+import useAuth from "hook/useAuth";
 
 // Data
 
@@ -34,12 +37,23 @@ function Creditod() {
       item['key'] = index + 1;
     })
   }
+  const { logout } = useAuth()
+
   useEffect(() => {
     (async () => {
       setuserTienda(await ListarHistorialTienda(dataCliente().id));
       setsaldo(await SaldoActual(dataCliente().id));
+      const cedula = dataTiendaCedula();
+      console.log(cedula);
+      const validar =await ValidarExistencia(cedula)
+      console.log(validar);
+      if(!validar){
+        logout()
+      }
     })()
   }, []);
+
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
